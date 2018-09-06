@@ -10,6 +10,7 @@ const isDev = require('electron-is-dev');
 // const content = fs.readFileSync('./public/config.ini', 'utf8');
 // const config = ini.parse(content);
 //console.log(config);
+const ipc = electron.ipcMain;
 
 let mainWindow;
 
@@ -18,7 +19,15 @@ function createWindow() {
       mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
       mainWindow.on('closed', () => mainWindow = null);
       mainWindow.webContents.openDevTools()
-
+      setInterval(function(){
+            console.log("send message");
+            mainWindow.webContents.send('message', {
+            msg: 'Hello World!'
+      });
+      }, 3000);
+      ipc.on("callback",(event, data)=>{
+            console.log(data);
+      })
 }
 
 app.on('ready', createWindow);

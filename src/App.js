@@ -2,10 +2,13 @@ import React, {Component} from 'react';
 const axios = require('axios');
 const ini = require('ini');
 var config="";
-//const ipcRenderer = require('electron');
+const electron = window.require('electron');
 const isDev = require('electron-is-dev');
 const path = require('path');
 const url = require('url');
+// const electron = require('electron');
+const fs = window.require("fs");
+const ipc = electron.ipcRenderer;
 
 export default class App extends Component{
       constructor(props){
@@ -15,10 +18,12 @@ export default class App extends Component{
             }
       }
       componentWillMount(){
-            // ipcRenderer.on("event", (event, someParameter) => {
-            //       alert("Hello world");
-            // });
-            console.log("####",this.state.config_ini);
+            ipc.on("message", (event, data) => {
+                  alert("Hello world");
+            });
+            ipc.send("callback","Here is react component");
+          console.log("####",this.state.config_ini);
+            
       }
       componentDidMount(){
             axios('./config.ini').then(((config_file) => {
@@ -26,6 +31,7 @@ export default class App extends Component{
                        console.log(config2);
                        this.setState({ config_ini: config2 }, () => {
                              console.log("@@", this.state.config_ini);
+                             ipc.send("callback", config2);
                        });
                  }))
       }
@@ -37,7 +43,6 @@ export default class App extends Component{
             this.setState({config_ini:new_config})
             console.log(this.state.config_ini[ids[0]][ids[1]]);
             console.log(this.state.config_ini);
-
       }
       handleBtnChange(e){
             var ids = e.target.id.split(".");
@@ -83,6 +88,13 @@ export default class App extends Component{
       }
       saveIni(){
             let config = this.state.config_ini;
+            fs.writeFile("./test.ini", ini.stringify(config), function (err) {
+                  if (err) {
+                        return console.log(err);
+                  }
+
+                  console.log("The file was saved!");
+            });
             console.log(config);
       }
       render(){
